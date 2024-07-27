@@ -1,23 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
 using Core;
+using PainterTest.Services;
 using UnityEngine;
+using Zenject;
+using ITickable = Core.ITickable;
 
 namespace PainterTest
 {
     public class PainterGameLoader : MonoBehaviour
     {
-        [SerializeField] private Painter _painter;
-        [SerializeField] private InputSystem _inputSystem;
-
         private PainterTestGameStateMachine _gameStateMachine;
         private List<GameState> _gameStates;
 
         private List<ITickable> _rootTickables = new List<ITickable>();
+        
+        // States
+        private PaintingState _paintingState;
 
+        [Inject]
+        public void Constructor(PaintingState paintingState)
+        {
+            _paintingState = paintingState;
+        }
+        
         // Stating point of application
         private void Start()
         {
+            
             InitStateMachine();
             InitTickables();
             StartInitialState();
@@ -34,7 +44,7 @@ namespace PainterTest
         {
             List<GameState> gameStates = new List<GameState>();
             
-            gameStates.Add(new PaintingState(_painter, _inputSystem));
+            gameStates.Add(_paintingState);
             
             return gameStates;
         }

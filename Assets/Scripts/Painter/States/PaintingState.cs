@@ -1,53 +1,40 @@
 ﻿using Core;
+using Core.Controllers;
+using PainterTest.Controllers;
+using PainterTest.Services;
+using Zenject;
 
 namespace PainterTest
 {
     public class PaintingState : GameState
     {
-        private readonly Painter _painter;
-        private readonly InputSystem _inputSystem;
-        
-        private bool _isTryingToPaint;
+        private readonly ICameraService _cameraService;
 
-        public PaintingState(Painter painter, InputSystem inputSystem)
+        [Inject]
+        public PaintingState(PainterController painterController, ICameraService cameraService)
         {
-            _painter = painter;
-            _inputSystem = inputSystem;
+            _cameraService = cameraService;
+            _stateControllers = new CompositeController(
+                painterController
+            );
         }
 
         public override void Enter()
         {
             base.Enter();
-            
-            _inputSystem.PointerDown += OnPaintingButtonDown;
-            _inputSystem.PointerUp += OnPaintingButtonUp;
+            _cameraService.SetMainCamera();
+            _stateControllers.Start();
         }
 
         public override void Exit()
         {
             base.Exit();
-            
-            _inputSystem.PointerDown -= OnPaintingButtonDown;
-            _inputSystem.PointerUp -= OnPaintingButtonUp;
-        }
-
-        private void OnPaintingButtonDown()
-        {
-            _isTryingToPaint = true;
-        }
-
-        private void OnPaintingButtonUp()
-        {
-            _isTryingToPaint = false;
+            _stateControllers.Stop();
         }
 
         public override void Tick()
         {
             base.Tick();
-            if (_isTryingToPaint)
-            {
-                _painter.TryPaintFromMousePosition();
-            }
         }
     }
 }
